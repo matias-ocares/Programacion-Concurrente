@@ -17,7 +17,7 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
     public void execute(QueueableContext qc) {
         Long startTime = System.currentTimeMillis();
 
-        // Contadores para métricas
+        // Contadores para metricas
         Integer successCount = 0;
         Integer lockCount = 0;
         Integer skippedCount = 0;
@@ -51,7 +51,7 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
             } catch (QueryException qe) {
                 attempts++;
                 lockCount++;
-                String errorMsg = qe.getMessage(); // aquí obtenés el mensaje del error
+                String errorMsg = qe.getMessage(); 
                 //Logger.error(scenario + ' - ' + 'Error en query: ' + errorMsg);
 
                 //Logger.warn(scenario+' - '+ 'Lock detectado al obtener Accounts. Intento ' + attempts);
@@ -64,17 +64,11 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
                     return;
                 }
 
-                // Si llegamos al máximo y skipOnFail=false → reiniciamos el contador y seguimos intentando
+                // Sii llegamos al maximo y skipOnFail=false --> reiniciamos el contador y seguimos intentando
                 if (!skipOnFail && attempts > maxRetries) {
                     Logger.warn(scenario+' - '+ 'Llegamos al máximo pero seguimos intentando indefinidamente (skipOnFail=false)');
                     attempts = 0;
                 }
-
-                // Espera artificial antes de reintentar
-               // Long waitUntil = System.currentTimeMillis() + delayMs;
-               // while (System.currentTimeMillis() < waitUntil) {
-                //    // busy wait
-               // }
             }
         }
 
@@ -88,7 +82,7 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
                 if (acc != null) {
                     acc.Counter__c = (acc.Counter__c == null ? 0 : acc.Counter__c) + 1;
 
-                    // Simulación de trabajo pesado
+                    // simulo de trabajo pesado
                     /*for (Integer i = 0; i < 20000; i++) {
                         String dummy = acc.Name + i;
                     }*/
