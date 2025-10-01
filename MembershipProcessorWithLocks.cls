@@ -17,7 +17,7 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
     public void execute(QueueableContext qc) {
         Long startTime = System.currentTimeMillis();
 
-        // Contadores para metricas
+        // Contadores para métricas
         Integer successCount = 0;
         Integer lockCount = 0;
         Integer skippedCount = 0;
@@ -51,7 +51,7 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
             } catch (QueryException qe) {
                 attempts++;
                 lockCount++;
-                String errorMsg = qe.getMessage(); 
+                String errorMsg = qe.getMessage(); // aquí obtenés el mensaje del error
                 //Logger.error(scenario + ' - ' + 'Error en query: ' + errorMsg);
 
                 //Logger.warn(scenario+' - '+ 'Lock detectado al obtener Accounts. Intento ' + attempts);
@@ -64,11 +64,17 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
                     return;
                 }
 
-                // Sii llegamos al maximo y skipOnFail=false --> reiniciamos el contador y seguimos intentando
+                // Si llegamos al máximo y skipOnFail=false → reiniciamos el contador y seguimos intentando
                 if (!skipOnFail && attempts > maxRetries) {
                     Logger.warn(scenario+' - '+ 'Llegamos al máximo pero seguimos intentando indefinidamente (skipOnFail=false)');
                     attempts = 0;
                 }
+
+                // Espera artificial antes de reintentar
+               // Long waitUntil = System.currentTimeMillis() + delayMs;
+               // while (System.currentTimeMillis() < waitUntil) {
+                //    // busy wait
+               // }
             }
         }
 
@@ -80,9 +86,10 @@ global with sharing class MembershipProcessorWithLocks implements Queueable {
             for (Membership__c m : batch) {
                 Account acc = accountsMap.get(m.Code__c);
                 if (acc != null) {
+                    m.account__c = acc.Id;
                     acc.Counter__c = (acc.Counter__c == null ? 0 : acc.Counter__c) + 1;
 
-                    // simulo de trabajo pesado
+                    // Simulación de trabajo pesado
                     /*for (Integer i = 0; i < 20000; i++) {
                         String dummy = acc.Name + i;
                     }*/
